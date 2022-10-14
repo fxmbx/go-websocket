@@ -43,9 +43,11 @@
               <a href="javascript:void(0)" class="btn btn-outline-secondary" id="sendBtn">Send Message</a>
 
               <input type="hidden" name="action" id="action">
-              <hr/>
+              <div class="mt-2 float-end" id="status">
 
-              <div id="output" class="chatbox">
+              </div>
+
+              <div id="output" class="chatbox mt-4">
 
               </div>
           </div>
@@ -60,6 +62,7 @@
 
   </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+  <script src="/static/reconnecting-websocket.min.js"></script>
   <script>
     let socket = null;
     let output = document.getElementById("output")
@@ -72,15 +75,23 @@
         socket.send(JSON.stringify(jsonData))
     }
     document.addEventListener("DOMContentLoaded",function(){
-        socket = new WebSocket("ws://127.0.0.1:8080/ws");
+        // socket = new WebSocket("ws://127.0.0.1:8080/ws");
+        socket = new ReconnectingWebSocket("ws://127.0.0.1:8080/ws", null, {debug: true, reconnectInterval: 3000});
 
+        const offline = `<span class="badge bg-danger">Not Connected</span>`
+        const online = `<span class="badge bg-success">Connected</span>`
+        let statusDiv = document.getElementById("status")
         socket.onopen = () => {
             console.log("successfully opened connection")
+            statusDiv.innerHTML = online
         }
         socket.onclose = () => {
+            statusDiv.innerHTML = offline
+
             console.log("connection closed")
         }
         socket.onerror = err => {
+            statusDiv.innerHTML = offline
             console.log("there was an error")
         }
 
